@@ -1,5 +1,6 @@
 package ca.rttv.reagenchant.mixin;
 
+import ca.rttv.reagenchant.Reagenchant;
 import ca.rttv.reagenchant.access.EnchantmentScreenHandlerDuck;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
@@ -39,13 +40,18 @@ public abstract class EnchantmentScreenHandlerMixin implements EnchantmentScreen
     }
 
     @Inject(method = "<init>(ILnet/minecraft/entity/player/PlayerInventory;Lnet/minecraft/screen/ScreenHandlerContext;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/screen/EnchantmentScreenHandler;addSlot(Lnet/minecraft/screen/slot/Slot;)Lnet/minecraft/screen/slot/Slot;", ordinal = 1))
-    private void init(int syncId, PlayerInventory playerInventory, ScreenHandlerContext context, CallbackInfo ci) {
+    private void addReagentSlot(int syncId, PlayerInventory playerInventory, ScreenHandlerContext context, CallbackInfo ci) {
         ((ScreenHandler) (Object) this).addSlot(new Slot(this.inventory, 2, 42, 47) {
             @Override
             public boolean canInsert(ItemStack stack) {
                 return stack.isOf(Items.MELON_SLICE);
             }
         });
+    }
+
+    @Inject(method = "onContentChanged", at = @At(value = "INVOKE", target = "Lnet/minecraft/inventory/Inventory;getStack(I)Lnet/minecraft/item/ItemStack;"))
+    private void onContentChanged(Inventory inventory, CallbackInfo ci) {
+        Reagenchant.reagent = inventory.getStack(2).getItem();
     }
 
     @Override
