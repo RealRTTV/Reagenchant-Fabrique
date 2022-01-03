@@ -1,11 +1,11 @@
 package ca.rttv.reagenchant;
 
 import net.fabricmc.api.ModInitializer;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import net.minecraft.util.Identifier;
 
 public class Reagenchant implements ModInitializer {
-	public static final Logger Logger = LogManager.getLogger("reagenchant");
+	public static final Identifier withoutReagent = new Identifier("reagenchant", "textures/reagent_enchanting_table_without_reagent.png");
+	public static final Identifier withReagent = new Identifier("reagenchant", "textures/reagent_enchanting_table_with_reagent.png");
 
 	@Override
 	public void onInitialize() {
