@@ -85,7 +85,7 @@ public abstract class EnchantmentHelperMixin {
                     for (int j = 0; j < jsonObject.getAsJsonArray("enchantments").size(); j++) // loop over every enchantment in the array
                         if (rand <= jsonObject.get("enchantments").getAsJsonArray().get(j).getAsJsonObject().get("probability").getAsFloat()) // do rng to check if we should reroll this
                             if (Registry.ENCHANTMENT.get(new Identifier(jsonObject.getAsJsonArray("enchantments").get(j).getAsJsonObject().get("enchantment").getAsString())).type.isAcceptableItem(item)) // check if valid enchant type
-                                if (!Registry.ENCHANTMENT.get(new Identifier("minecraft:loyalty")).equals(instance))
+                                if (!Registry.ENCHANTMENT.get(new Identifier(jsonObject.getAsJsonArray("enchantments").get(j).getAsJsonObject().get("enchantment").getAsString())).equals(instance))
                                     return Registry.ENCHANTMENT.get(new Identifier(jsonObject.getAsJsonArray("enchantments").get(j).getAsJsonObject().get("enchantment").getAsString())); // gives enchant at the index we at
                     break;
                 }
