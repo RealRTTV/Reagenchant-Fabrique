@@ -1,17 +1,6 @@
 package ca.rttv.reagenchant;
 
-import ca.rttv.reagenchant.config.blaze_powder;
-import ca.rttv.reagenchant.config.blue_ice;
-import ca.rttv.reagenchant.config.diamond;
-import ca.rttv.reagenchant.config.glowstone_dust;
-import ca.rttv.reagenchant.config.gold_ingot;
-import ca.rttv.reagenchant.config.gunpowder;
-import ca.rttv.reagenchant.config.iron_ingot;
-import ca.rttv.reagenchant.config.nether_star;
-import ca.rttv.reagenchant.config.obsidian;
-import ca.rttv.reagenchant.config.prismarine_crystals;
-import ca.rttv.reagenchant.config.prismarine_shard;
-import ca.rttv.reagenchant.config.redstone;
+import ca.rttv.reagenchant.config.*;
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.item.Item;
 import net.minecraft.util.Identifier;
@@ -36,7 +25,5 @@ public class Reagenchant implements ModInitializer {
 		prismarine_crystals.loadConfigs();
 		prismarine_shard.loadConfigs();
 		redstone.loadConfigs();
-
-
 	}
 }

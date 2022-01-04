@@ -1,7 +1,6 @@
 package ca.rttv.reagenchant.mixin;
 
 import ca.rttv.reagenchant.Reagenchant;
-import ca.rttv.reagenchant.access.EnchantmentScreenHandlerDuck;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.screen.ingame.EnchantmentScreen;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
@@ -23,6 +22,6 @@ public abstract class EnchantmentScreenMixin extends HandledScreen {
 
     @Inject(method = "drawBackground", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;setShaderTexture(ILnet/minecraft/util/Identifier;)V", shift = At.Shift.AFTER))
     private void drawBackground(MatrixStack matrices, float delta, int mouseX, int mouseY, CallbackInfo ci) {
-        RenderSystem.setShaderTexture (0, ((EnchantmentScreenHandlerDuck) this.handler).getReagentItem() == Items.AIR ? Reagenchant.withoutReagent : Reagenchant.withReagent);
+        RenderSystem.setShaderTexture (0, (Reagenchant.reagent == Items.AIR ? Reagenchant.withoutReagent : Reagenchant.withReagent));
     }
 }

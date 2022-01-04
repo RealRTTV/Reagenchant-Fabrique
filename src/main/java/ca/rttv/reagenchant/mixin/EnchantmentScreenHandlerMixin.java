@@ -1,12 +1,9 @@
 package ca.rttv.reagenchant.mixin;
 
 import ca.rttv.reagenchant.Reagenchant;
-import ca.rttv.reagenchant.access.EnchantmentScreenHandlerDuck;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.screen.EnchantmentScreenHandler;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.ScreenHandlerContext;
@@ -20,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(EnchantmentScreenHandler.class)
-public abstract class EnchantmentScreenHandlerMixin implements EnchantmentScreenHandlerDuck {
+public abstract class EnchantmentScreenHandlerMixin {
 
     @Shadow @Final private Inventory inventory;
 
@@ -44,7 +41,11 @@ public abstract class EnchantmentScreenHandlerMixin implements EnchantmentScreen
         ((ScreenHandler) (Object) this).addSlot(new Slot(this.inventory, 2, 42, 47) {
             @Override
             public boolean canInsert(ItemStack stack) {
-                return stack.isOf(Items.MELON_SLICE);
+                return true;
+            }
+            @Override
+            public int getMaxItemCount() {
+                return 1;
             }
         });
     }
@@ -52,10 +53,5 @@ public abstract class EnchantmentScreenHandlerMixin implements EnchantmentScreen
     @Inject(method = "onContentChanged", at = @At(value = "INVOKE", target = "Lnet/minecraft/inventory/Inventory;getStack(I)Lnet/minecraft/item/ItemStack;"))
     private void onContentChanged(Inventory inventory, CallbackInfo ci) {
         Reagenchant.reagent = inventory.getStack(2).getItem();
-    }
-
-    @Override
-    public Item getReagentItem() {
-        return this.inventory.getStack(2).getItem();
     }
 }
