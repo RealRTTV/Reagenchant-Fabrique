@@ -8,8 +8,9 @@ import net.minecraft.util.Identifier;
 public class Reagenchant implements ModInitializer {
 	public static final Identifier withoutReagent = new Identifier("reagenchant", "textures/reagent_enchanting_table_without_reagent.png");
 	public static final Identifier withReagent = new Identifier("reagenchant", "textures/reagent_enchanting_table_with_reagent.png");
-	public static final float configVersion = 1.0f;
-	public static Item reagent;
+	public static final float configVersion = 1.1f;
+    public static Item reagent;
+	public static int decrement = 0;
 
 	@Override
 	public void onInitialize() {

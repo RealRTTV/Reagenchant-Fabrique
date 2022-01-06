@@ -2,11 +2,7 @@ package ca.rttv.reagenchant.config;
 
 import ca.rttv.reagenchant.Reagenchant;
 import ca.rttv.reagenchant.config.extra.JsonHelper;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 
 import java.io.BufferedReader;
 import java.io.File;

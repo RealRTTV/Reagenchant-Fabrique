@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 
 public class nether_star {
 
-    public static File configFile = new File(JsonHelper.getConfigDirectory(), "mending.json");
+    public static File configFile = new File(JsonHelper.getConfigDirectory(), "nether_star.json");
     public static Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     public static JsonObject jsonObject;
 
@@ -37,7 +37,7 @@ public class nether_star {
 
         json.addProperty("version", Reagenchant.configVersion);
 
-        json.addProperty("item", "minecraft:mending");
+        json.addProperty("item", "minecraft:nether_star");
 
         JsonArray enchantments = new JsonArray();
 

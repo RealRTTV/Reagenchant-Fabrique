@@ -1,6 +1,9 @@
 package ca.rttv.reagenchant.mixin;
 
 import ca.rttv.reagenchant.Reagenchant;
+import ca.rttv.reagenchant.config.extra.JsonHelper;
+import com.google.gson.JsonParser;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
@@ -8,6 +11,9 @@ import net.minecraft.screen.EnchantmentScreenHandler;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.ScreenHandlerContext;
 import net.minecraft.screen.slot.Slot;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -15,6 +21,13 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Mixin(EnchantmentScreenHandler.class)
 public abstract class EnchantmentScreenHandlerMixin {
@@ -41,8 +54,16 @@ public abstract class EnchantmentScreenHandlerMixin {
         ((ScreenHandler) (Object) this).addSlot(new Slot(this.inventory, 2, 42, 47) {
             @Override
             public boolean canInsert(ItemStack stack) {
-                return true;
+                boolean isValidItem = false;
+                for (File file : Objects.requireNonNull(JsonHelper.getConfigDirectory().listFiles())) {
+                    try {
+                        isValidItem = Registry.ITEM.getId(stack.getItem()).toString().equals(JsonParser.parseString(new BufferedReader(new FileReader(file)).lines().collect(Collectors.joining("\n"))).getAsJsonObject().get("item").getAsString());
+                    } catch (FileNotFoundException e) { break; }
+                    if (isValidItem) break;
+                }
+                return isValidItem;
             }
+
             @Override
             public int getMaxItemCount() {
                 return 1;
@@ -53,5 +74,17 @@ public abstract class EnchantmentScreenHandlerMixin {
     @Inject(method = "onContentChanged", at = @At(value = "INVOKE", target = "Lnet/minecraft/inventory/Inventory;getStack(I)Lnet/minecraft/item/ItemStack;"))
     private void onContentChanged(Inventory inventory, CallbackInfo ci) {
         Reagenchant.reagent = inventory.getStack(2).getItem();
+    }
+
+    @Inject(method = "method_17410", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;incrementStat(Lnet/minecraft/util/Identifier;)V"))
+    private void onButtonClick(ItemStack itemStack, int i, PlayerEntity playerEntity, int j, ItemStack itemStack2, World world, BlockPos pos, CallbackInfo ci) {
+        ItemStack stack = this.inventory.getStack(2);
+
+        if (!playerEntity.getAbilities().creativeMode) {
+            stack.decrement(Reagenchant.decrement);
+            if (stack.isEmpty()) {
+                this.inventory.setStack(2, ItemStack.EMPTY);
+            }
+        }
     }
 }

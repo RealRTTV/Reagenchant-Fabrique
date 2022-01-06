@@ -2,7 +2,6 @@ package ca.rttv.reagenchant.mixin;
 
 import ca.rttv.reagenchant.Reagenchant;
 import ca.rttv.reagenchant.config.extra.JsonHelper;
-import com.google.common.collect.Lists;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.minecraft.enchantment.Enchantment;
@@ -14,82 +13,77 @@ import net.minecraft.item.Items;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.IOException;
-import java.util.Iterator;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 import java.util.stream.Collectors;
 
 @Mixin(EnchantmentHelper.class)
 public abstract class EnchantmentHelperMixin {
-
-    private static Random rand;
-
-    @Inject(method = "generateEnchantments", at = @At(value = "INVOKE", target = "Lnet/minecraft/enchantment/EnchantmentHelper;getPossibleEntries(ILnet/minecraft/item/ItemStack;Z)Ljava/util/List;", shift = At.Shift.BEFORE))
-    private static void generateEnchantments(Random random, ItemStack stack, int level, boolean treasureAllowed, CallbackInfoReturnable<List<EnchantmentLevelEntry>> cir) {
-        rand = random;
+    @ModifyVariable(method = "generateEnchantments", at = @At(value = "INVOKE", target = "Ljava/util/Objects;requireNonNull(Ljava/lang/Object;)Ljava/lang/Object;", ordinal = 0), ordinal = 1)
+    private static List<EnchantmentLevelEntry> generateEnchantments(List<EnchantmentLevelEntry> list2, Random random, ItemStack stack, int level, boolean treasureAllowed) throws FileNotFoundException {
+        if (Reagenchant.reagent != Items.AIR) {
+            return reroll(random, stack.getItem(), list2, level, Reagenchant.reagent);
+        }
+        return list2;
     }
 
-    /**
-     * why does intellij want me to add an author tag?
-     * @reason im sorry ok ik you don't want me to do this but its just for a little bit ok its not like other stuff uses this method please cheer up ok mixin ♥♥♥
-     * @author RTTV
-     */
-    @Overwrite
-    public static List<EnchantmentLevelEntry> getPossibleEntries(int power, ItemStack stack, boolean treasureAllowed) {
-        List<EnchantmentLevelEntry> list = Lists.newArrayList();
-        Item item = stack.getItem();
-        boolean bl = stack.isOf(Items.BOOK);
-        Iterator<Enchantment> var6 = Registry.ENCHANTMENT.iterator();
+    private static List<EnchantmentLevelEntry> reroll(Random random, Item item, List<EnchantmentLevelEntry> list, int power, Item reagent) throws FileNotFoundException {
+        File[] files = Objects.requireNonNull(JsonHelper.getConfigDirectory().listFiles());
+        JsonObject reagentObject = null;
+        List<EnchantmentLevelEntry> newList = new ArrayList<>();
 
-        //noinspection LoopStatementThatDoesntLoop
-        while(true) {
-            while(true) {
-                Enchantment enchantment;
-                    do
-                        do
-                            do {
-                                if (!var6.hasNext())
-                                    return list;
-                                enchantment = var6.next();
-                            }
-                            while (enchantment.isTreasure() && !treasureAllowed);
-                        while (!enchantment.isAvailableForRandomSelection());
-                    while (!enchantment.type.isAcceptableItem(item) && !bl);
-                if (Reagenchant.reagent != Items.AIR) enchantment = reroll(enchantment, rand.nextDouble(), stack.getItem());
-
-                for(int i = enchantment.getMaxLevel(); i > enchantment.getMinLevel() - 1; --i) {
-                    if (power >= enchantment.getMinPower(i) && power <= enchantment.getMaxPower(i)) {
-                        list.add(new EnchantmentLevelEntry(enchantment, i));
-                        break;
-                    }
-                }
+        for (File file : files) {
+            reagentObject = JsonParser.parseString(new BufferedReader(new FileReader(file)).lines().collect(Collectors.joining("\n"))).getAsJsonObject();
+            String sinceImEfficient = reagentObject.get("item").getAsString();
+            if (sinceImEfficient.equals(Registry.ITEM.getId(reagent).toString())) {
+                break; // breaks the for loop setting everything perfectly
             }
         }
-    }
 
-    private static Enchantment reroll(Enchantment instance, double rand, Item item) {
-        for (int i = 0; i < JsonHelper.getConfigDirectory().listFiles().length; i++) // loop over every file in the directoy
-            try (BufferedReader reader = new BufferedReader(new FileReader(JsonHelper.getConfigDirectory().listFiles()[i]))) {
+        if (reagentObject == null) {
+            try {
+                throw new FileNotFoundException("Your reagent is not in an existing file, idk how this error occured but please add a json under the config folder in the format of the others"); // wow tabnine read my mind
+            } catch (FileNotFoundException ignored) { }
+        }
 
-                JsonObject jsonObject = JsonParser.parseString(reader.lines().collect(Collectors.joining("\n"))).getAsJsonObject();
+        for (int i = 0; i < list.size(); i++) {
+            if (random.nextDouble() <= Objects.requireNonNull(reagentObject).getAsJsonArray("enchantments").get(i).getAsJsonObject().get("probability").getAsFloat()) {
+                // all the stars have aligned
+                // time to replace it!
 
-                if (jsonObject.get("item").getAsString().equals(Registry.ITEM.getId(Reagenchant.reagent).toString())) { // if its the correct file
-                    for (int j = 0; j < jsonObject.getAsJsonArray("enchantments").size(); j++) // loop over every enchantment in the array
-                        if (rand <= jsonObject.get("enchantments").getAsJsonArray().get(j).getAsJsonObject().get("probability").getAsFloat()) // do rng to check if we should reroll this
-                            if (Registry.ENCHANTMENT.get(new Identifier(jsonObject.getAsJsonArray("enchantments").get(j).getAsJsonObject().get("enchantment").getAsString())).type.isAcceptableItem(item)) // check if valid enchant type
-                                if (!Registry.ENCHANTMENT.get(new Identifier(jsonObject.getAsJsonArray("enchantments").get(j).getAsJsonObject().get("enchantment").getAsString())).equals(instance))
-                                    return Registry.ENCHANTMENT.get(new Identifier(jsonObject.getAsJsonArray("enchantments").get(j).getAsJsonObject().get("enchantment").getAsString())); // gives enchant at the index we at
-                    break;
+                reagentArray: for (int j = 0; j < reagentObject.getAsJsonArray("enchantments").size(); j++) {
+                    Enchantment enchantment = Objects.requireNonNull(Registry.ENCHANTMENT.get(new Identifier(reagentObject.getAsJsonArray("enchantments").get(j).getAsJsonObject().get("enchantment").getAsString())));
+                    // checks if enchantment is valid and if it doesn't already exist lol
+                    if (enchantment.type.isAcceptableItem(item)) {
+
+                        for (EnchantmentLevelEntry entry : list) { // this is to not add multiple of the same enchantment
+                            if (entry.enchantment == enchantment) break reagentArray;
+                        }
+
+                        // ctrl c ctrl v of mc code, yes ik what it does
+                        for (int level = enchantment.getMaxLevel(); level > enchantment.getMinLevel() - 1; --level) {
+                            if (power >= enchantment.getMinPower(level) && power <= enchantment.getMaxPower(level)) {
+                                newList.add(new EnchantmentLevelEntry(enchantment, level));
+                                break reagentArray;
+                            }
+                        }
+                        newList.add(list.get(i)); // don't need to check if its added any enchants to the list because this only runs if the entire for loop will fail so this will be a fallback
+                    }
                 }
-            } catch (IOException e) { e.printStackTrace(); }
-        return instance;
+            } else {
+                newList.add(list.get(i));
+            }
+        }
+        EnchantmentHelper.removeConflicts(newList, newList.get(newList.size() - 1));
+        return newList;
     }
 }
