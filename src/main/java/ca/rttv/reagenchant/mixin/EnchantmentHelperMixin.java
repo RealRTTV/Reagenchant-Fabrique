@@ -28,46 +28,66 @@ import java.util.stream.Collectors;
 
 @Mixin(EnchantmentHelper.class)
 public abstract class EnchantmentHelperMixin {
-    @ModifyVariable(method = "generateEnchantments", at = @At(value = "INVOKE", target = "Ljava/util/Objects;requireNonNull(Ljava/lang/Object;)Ljava/lang/Object;", ordinal = 0), ordinal = 1)
-    private static List<EnchantmentLevelEntry> generateEnchantments(List<EnchantmentLevelEntry> list2, Random random, ItemStack stack, int level, boolean treasureAllowed) throws FileNotFoundException {
+
+    @ModifyVariable(method = "generateEnchantments", at = @At(value = "RETURN", ordinal = 1), ordinal = 0)
+    private static List<EnchantmentLevelEntry> list(List<EnchantmentLevelEntry> list2, Random random, ItemStack stack, int level, boolean treasureAllowed) throws FileNotFoundException {
         if (Reagenchant.reagent != Items.AIR) {
-            return reroll(random, stack.getItem(), list2, level, Reagenchant.reagent);
+            List<EnchantmentLevelEntry> concat = new ArrayList<>();
+            concat.addAll(extras(random, stack.getItem(), list2, level, Reagenchant.reagent));
+            concat.addAll(list2);
+            for (int i = 0; i < concat.size(); i++) {
+                for (int j = i; j < concat.size(); j++) {
+                    if (i != j && concat.get(i).enchantment == concat.get(j).enchantment) {
+                        concat.remove(j);
+                    }
+                }
+            }
+            return concat;
         }
         return list2;
     }
 
-    private static List<EnchantmentLevelEntry> reroll(Random random, Item item, List<EnchantmentLevelEntry> list, int power, Item reagent) throws FileNotFoundException {
+    private static List<EnchantmentLevelEntry> extras(Random random, Item item, List<EnchantmentLevelEntry> list, int power, Item reagent) throws FileNotFoundException {
         File[] files = Objects.requireNonNull(JsonHelper.getConfigDirectory().listFiles());
         JsonObject reagentObject = null;
         List<EnchantmentLevelEntry> newList = new ArrayList<>();
 
         for (File file : files) {
             reagentObject = JsonParser.parseString(new BufferedReader(new FileReader(file)).lines().collect(Collectors.joining("\n"))).getAsJsonObject();
-            String sinceImEfficient = reagentObject.get("item").getAsString();
-            if (sinceImEfficient.equals(Registry.ITEM.getId(reagent).toString())) {
+            String jsonItem = reagentObject.get("item").getAsString();
+            if (jsonItem.equals(Registry.ITEM.getId(reagent).toString())) {
                 break; // breaks the for loop setting everything perfectly
             }
         }
 
         if (reagentObject == null) {
-            try {
-                throw new FileNotFoundException("Your reagent is not in an existing file, idk how this error occured but please add a json under the config folder in the format of the others"); // wow tabnine read my mind
-            } catch (FileNotFoundException ignored) { }
+            throw new FileNotFoundException("Your reagent is not in an existing file, idk how this error occurred but please add a json under the config folder in the format of the others"); // wow tabnine read my mind
         }
 
-        for (int i = 0; i < list.size(); i++) {
-            if (random.nextDouble() <= Objects.requireNonNull(reagentObject).getAsJsonArray("enchantments").get(i).getAsJsonObject().get("probability").getAsFloat()) {
+        for (int i = 0; i < reagentObject.getAsJsonArray("enchantments").size(); i++) {
+            if (random.nextDouble() <= reagentObject.getAsJsonArray("enchantments").get(i).getAsJsonObject().get("probability").getAsFloat()) {
                 // all the stars have aligned
                 // time to replace it!
 
-                reagentArray: for (int j = 0; j < reagentObject.getAsJsonArray("enchantments").size(); j++) {
+                reagentArray:
+                for (int j = 0; j < reagentObject.getAsJsonArray("enchantments").size(); j++) {
                     Enchantment enchantment = Objects.requireNonNull(Registry.ENCHANTMENT.get(new Identifier(reagentObject.getAsJsonArray("enchantments").get(j).getAsJsonObject().get("enchantment").getAsString())));
                     // checks if enchantment is valid and if it doesn't already exist lol
                     if (enchantment.type.isAcceptableItem(item)) {
 
-                        for (EnchantmentLevelEntry entry : list) { // this is to not add multiple of the same enchantment
-                            if (entry.enchantment == enchantment) break reagentArray;
+                        for (EnchantmentLevelEntry entry : newList) { // this is to not add multiple of the same enchantment
+                            if (entry.enchantment == enchantment) {
+                                break reagentArray;
+                            }
                         }
+
+                        for (EnchantmentLevelEntry entry : list) { // this is to not add multiple of the same enchantment
+                            if (entry.enchantment == enchantment) {
+                                break reagentArray;
+                            }
+                        }
+
+                        Reagenchant.decrement = reagentObject.getAsJsonArray("enchantments").get(j).getAsJsonObject().get("reagentCost").getAsInt();
 
                         // ctrl c ctrl v of mc code, yes ik what it does
                         for (int level = enchantment.getMaxLevel(); level > enchantment.getMinLevel() - 1; --level) {
@@ -76,14 +96,10 @@ public abstract class EnchantmentHelperMixin {
                                 break reagentArray;
                             }
                         }
-                        newList.add(list.get(i)); // don't need to check if its added any enchants to the list because this only runs if the entire for loop will fail so this will be a fallback
                     }
                 }
-            } else {
-                newList.add(list.get(i));
             }
         }
-        EnchantmentHelper.removeConflicts(newList, newList.get(newList.size() - 1));
         return newList;
     }
 }

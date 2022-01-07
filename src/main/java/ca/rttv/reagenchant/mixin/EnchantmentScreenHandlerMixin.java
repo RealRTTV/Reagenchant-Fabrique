@@ -63,11 +63,6 @@ public abstract class EnchantmentScreenHandlerMixin {
                 }
                 return isValidItem;
             }
-
-            @Override
-            public int getMaxItemCount() {
-                return 1;
-            }
         });
     }
 

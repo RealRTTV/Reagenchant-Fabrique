@@ -37,7 +37,7 @@ public class glowstone_dust {
 
         json.addProperty("version", Reagenchant.configVersion);
 
-        json.addProperty("item", "minecraft:diamond");
+        json.addProperty("item", "minecraft:glowstone_dust");
 
         JsonArray enchantments = new JsonArray();
 
