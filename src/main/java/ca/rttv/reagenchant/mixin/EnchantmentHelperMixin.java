@@ -7,7 +7,6 @@ import com.google.gson.JsonParser;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
-import net.minecraft.enchantment.Enchantments;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -74,12 +73,10 @@ public abstract class EnchantmentHelperMixin {
      * @return all of the enchantments the item can get from the current reagent (if rng rolls yes)
      * @throws FileNotFoundException FileReader lol
      */
-
     private static List<EnchantmentLevelEntry> getReagentEntries(Random random, Item item, int power, Item reagent) throws FileNotFoundException {
         File[] files = Objects.requireNonNull(JsonHelper.getConfigDirectory().listFiles());
         JsonObject reagentObject = null;
         List<EnchantmentLevelEntry> newList = new ArrayList<>();
-
         for (File file : files) {
             reagentObject = JsonParser.parseString(new BufferedReader(new FileReader(file)).lines().collect(Collectors.joining("\n"))).getAsJsonObject();
             String jsonItem = reagentObject.get("item").getAsString();

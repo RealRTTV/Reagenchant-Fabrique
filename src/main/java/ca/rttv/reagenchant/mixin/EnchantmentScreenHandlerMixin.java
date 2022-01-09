@@ -4,6 +4,7 @@ import ca.rttv.reagenchant.Reagenchant;
 import ca.rttv.reagenchant.config.extra.JsonHelper;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
