@@ -2,11 +2,13 @@ package ca.rttv.reagenchant.mixin;
 
 import ca.rttv.reagenchant.Reagenchant;
 import ca.rttv.reagenchant.config.extra.JsonHelper;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.screen.EnchantmentScreenHandler;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.ScreenHandlerContext;
@@ -77,9 +79,6 @@ public abstract class EnchantmentScreenHandlerMixin {
 
         if (!playerEntity.getAbilities().creativeMode) {
             stack.decrement(Reagenchant.decrement);
-            if (stack.isEmpty()) {
-                this.inventory.setStack(2, ItemStack.EMPTY);
-            }
         }
     }
 }
