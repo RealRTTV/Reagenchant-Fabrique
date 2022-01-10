@@ -1,6 +1,6 @@
 package ca.rttv.reagenchant.mixin;
 
-import ca.rttv.reagenchant.Reagenchant;
+import ca.rttv.reagenchant.access.ItemStackAccess;
 import ca.rttv.reagenchant.config.extra.JsonHelper;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -38,11 +38,8 @@ public abstract class EnchantmentHelperMixin {
      */
     @ModifyVariable(method = "generateEnchantments", at = @At(value = "RETURN", ordinal = 1, shift = At.Shift.BEFORE), ordinal = 0)
     private static List<EnchantmentLevelEntry> list(List<EnchantmentLevelEntry> list, Random random, ItemStack stack, int level, boolean treasureAllowed) throws FileNotFoundException {
-        if (Reagenchant.reagent != Items.AIR) {
-            List<EnchantmentLevelEntry> reagentEntries = getReagentEntries(random, stack.getItem(), level, Reagenchant.reagent);
-            if (reagentEntries.size() > 0) {
-
-            }
+        if (((ItemStackAccess) (Object) stack).getReagent() != Items.AIR) {
+            List<EnchantmentLevelEntry> reagentEntries = getReagentEntries(random, stack, level, ((ItemStackAccess) (Object) stack).getReagent(), ((ItemStackAccess) (Object) stack).getSlot());
             List<EnchantmentLevelEntry> concat = new ArrayList<>(reagentEntries);
             concat.addAll(list);
             for (int i = 0; i < concat.size(); i++) {
@@ -54,26 +51,28 @@ public abstract class EnchantmentHelperMixin {
             }
             return concat;
         }
+        ((ItemStackAccess) (Object) stack).setDecrement(0, ((ItemStackAccess) (Object) stack).getSlot());
         return list;
     }
 
     /**
      * this is the getReagentEntries method
      * this method in simple does what the
-     * vanilla {@link EnchantmentHelper#getPossibleEntries(int, net.minecraft.item.ItemStack, boolean)}
+     * vanilla {@link EnchantmentHelper#getPossibleEntries(int, ItemStack, boolean)}
      * method does but for only the entries
      * in the current reagent's {@code enchantments}
      * array, this array can be found at
      * the respective config file.
      *
      * @param random  a mirrored version of the enchantment random
-     * @param item    item to be enchanted
+     * @param stack   item to be enchanted
      * @param power   bookshelf power for enchant level
      * @param reagent current reagent
      * @return all of the enchantments the item can get from the current reagent (if rng rolls yes)
      * @throws FileNotFoundException FileReader lol
      */
-    private static List<EnchantmentLevelEntry> getReagentEntries(Random random, Item item, int power, Item reagent) throws FileNotFoundException {
+    private static List<EnchantmentLevelEntry> getReagentEntries(Random random, ItemStack stack, int power, Item reagent, int slot) throws FileNotFoundException {
+        int reagentCost = 0;
         File[] files = Objects.requireNonNull(JsonHelper.getConfigDirectory().listFiles());
         JsonObject reagentObject = null;
         List<EnchantmentLevelEntry> newList = new ArrayList<>();
@@ -86,23 +85,38 @@ public abstract class EnchantmentHelperMixin {
         }
 
         for (int i = 0; i < reagentObject.getAsJsonArray("enchantments").size(); i++) {
-            if (random.nextDouble() <= reagentObject.getAsJsonArray("enchantments").get(i).getAsJsonObject().get("probability").getAsFloat()) {
-                // all the stars have aligned
-                // time to replace it!
+//            if (random.nextDouble() <= reagentObject.getAsJsonArray("enchantments").get(i).getAsJsonObject().get("probability").getAsFloat()) {
                 Enchantment enchantment = Objects.requireNonNull(Registry.ENCHANTMENT.get(new Identifier(reagentObject.getAsJsonArray("enchantments").get(i).getAsJsonObject().get("enchantment").getAsString())));
                 // checks if enchantment is valid and if it doesn't already exist lol
-                if (enchantment.type.isAcceptableItem(item)) {
-                    Reagenchant.decrement = reagentObject.getAsJsonArray("enchantments").get(i).getAsJsonObject().get("reagentCost").getAsInt();
+                if (enchantment.type.isAcceptableItem(stack.getItem())) {
+
+                    reagentCost += reagentObject.getAsJsonArray("enchantments").get(i).getAsJsonObject().get("reagentCost").getAsInt();
+
+                    int minLevel = reagentObject.getAsJsonArray("enchantments").get(i).getAsJsonObject().get("minimumEnchantmentLevel").getAsInt();
+                    int maxLevel = reagentObject.getAsJsonArray("enchantments").get(i).getAsJsonObject().get("maximumEnchantmentLevel").getAsInt();
+                    power += reagentObject.getAsJsonArray("enchantments").get(i).getAsJsonObject().get("bonusPower").getAsInt();
+                    // all the stars have aligned
+                    // time to replace it!
+                    if (enchantment.getMinPower(minLevel) > power) {
+                        newList.add(new EnchantmentLevelEntry(enchantment, enchantment.getMinLevel()));
+                    }
 
                     // ctrl c ctrl v of mc code, yes ik what it does
-                    for (int level = enchantment.getMaxLevel(); level > enchantment.getMinLevel() - 1; --level) {
-                        if (power >= enchantment.getMinPower(level) && power <= enchantment.getMaxPower(level)) {
-                            newList.add(new EnchantmentLevelEntry(enchantment, level));
+                    for (int level = maxLevel; level >= enchantment.getMinLevel(); --level) {
+                        if (power >= enchantment.getMinPower(level)) {
+                            if (power <= enchantment.getMaxPower(level)) {
+                                newList.add(new EnchantmentLevelEntry(enchantment, level));
+                                break;
+                            }
                         }
-                    }
+//                    }
                 }
             }
         }
-        return newList;
+        if (((ItemStackAccess) (Object) stack).getReagentCount() >= reagentCost) {
+            ((ItemStackAccess) (Object) stack).setDecrement(reagentCost, slot);
+            return newList;
+        }
+        return new ArrayList<>();
     }
 }

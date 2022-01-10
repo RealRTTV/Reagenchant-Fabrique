@@ -1,15 +1,13 @@
 package ca.rttv.reagenchant.mixin;
 
-import ca.rttv.reagenchant.Reagenchant;
+import ca.rttv.reagenchant.access.ItemStackAccess;
 import ca.rttv.reagenchant.config.extra.JsonHelper;
-import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.screen.EnchantmentScreenHandler;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.ScreenHandlerContext;
@@ -24,18 +22,22 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Mixin(EnchantmentScreenHandler.class)
 public abstract class EnchantmentScreenHandlerMixin {
 
-    @Shadow @Final private Inventory inventory;
+    @Shadow @Final
+    public Inventory inventory;
 
     @ModifyArg(method = "<init>(ILnet/minecraft/entity/player/PlayerInventory;Lnet/minecraft/screen/ScreenHandlerContext;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/screen/EnchantmentScreenHandler;addSlot(Lnet/minecraft/screen/slot/Slot;)Lnet/minecraft/screen/slot/Slot;", ordinal = 0), index = 0)
     private Slot changeItemEnchantX(Slot slot) {
@@ -69,17 +71,31 @@ public abstract class EnchantmentScreenHandlerMixin {
         });
     }
 
+    @Inject(method = "method_17411", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/registry/Registry;getRawId(Ljava/lang/Object;)I"))
+    private void setItemsSlot(ItemStack itemStack, World world, BlockPos pos, CallbackInfo ci) {
+        ((ItemStackAccess) (Object) itemStack).setDecrement(((ItemStackAccess) (Object) this.inventory.getStack(0)).getDecrement()[0], 0);
+        ((ItemStackAccess) (Object) itemStack).setDecrement(((ItemStackAccess) (Object) this.inventory.getStack(0)).getDecrement()[1], 1);
+        ((ItemStackAccess) (Object) itemStack).setDecrement(((ItemStackAccess) (Object) this.inventory.getStack(0)).getDecrement()[2], 2);
+    }
+
     @Inject(method = "onContentChanged", at = @At(value = "INVOKE", target = "Lnet/minecraft/inventory/Inventory;getStack(I)Lnet/minecraft/item/ItemStack;"))
     private void onContentChanged(Inventory inventory, CallbackInfo ci) {
-        Reagenchant.reagent = inventory.getStack(2).getItem();
+        ((ItemStackAccess) (Object) this.inventory.getStack(0)).setReagent(inventory.getStack(2).getItem());
+        ((ItemStackAccess) (Object) this.inventory.getStack(0)).setReagentCount(inventory.getStack(2).getCount());
+    }
+
+    @Inject(method = "generateEnchantments", at = @At("HEAD"))
+    private void setSlot(ItemStack stack, int slot, int level, CallbackInfoReturnable<List<EnchantmentLevelEntry>> cir) {
+        ((ItemStackAccess) (Object) this.inventory.getStack(0)).setSlot(slot);
+        System.out.println(Arrays.toString(((ItemStackAccess) (Object) this.inventory.getStack(0)).getDecrement()));
     }
 
     @Inject(method = "method_17410", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;incrementStat(Lnet/minecraft/util/Identifier;)V"))
     private void onButtonClick(ItemStack itemStack, int i, PlayerEntity playerEntity, int j, ItemStack itemStack2, World world, BlockPos pos, CallbackInfo ci) {
         ItemStack stack = this.inventory.getStack(2);
 
-        if (!playerEntity.getAbilities().creativeMode) {
-            stack.decrement(Reagenchant.decrement);
+        if (!playerEntity.getAbilities().creativeMode && stack.getCount() >= ((ItemStackAccess) (Object) this.inventory.getStack(0)).getDecrement()[i]) {
+            stack.decrement(((ItemStackAccess) (Object) this.inventory.getStack(0)).getDecrement()[i]);
         }
     }
 }

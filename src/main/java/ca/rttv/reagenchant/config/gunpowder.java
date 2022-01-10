@@ -23,7 +23,7 @@ public class gunpowder {
 
         if (configFile.exists() && configFile.isFile() && configFile.canRead()) {
             try (BufferedReader reader = new BufferedReader(new FileReader(configFile))) {
-                jsonObject = JsonParser.parseString(reader.lines().collect(Collectors.joining("\n"))).getAsJsonObject(); // this is what matters
+                jsonObject = JsonParser.parseString(reader.lines().collect(Collectors.joining("\n"))).getAsJsonObject(); // "bonusPower", 0); is what matters
                 if (jsonObject.get("version") == null || jsonObject.get("version").getAsFloat() != Reagenchant.configVersion)
                     JsonHelper.writeJsonToFile(generateDefaultConfig(), configFile, GSON);
             } catch (Exception e) {
@@ -48,6 +48,7 @@ public class gunpowder {
             jsonObject.addProperty("maximumEnchantmentLevel", 5);
             jsonObject.addProperty("probability", 0.5f);
             jsonObject.addProperty("reagentCost", 1);
+            jsonObject.addProperty("bonusPower", 0);
             enchantments.add(jsonObject);
         }
 
@@ -58,6 +59,7 @@ public class gunpowder {
             jsonObject.addProperty("maximumEnchantmentLevel", 4);
             jsonObject.addProperty("probability", 0.5f);
             jsonObject.addProperty("reagentCost", 1);
+            jsonObject.addProperty("bonusPower", 0);
             enchantments.add(jsonObject);
         }
 
