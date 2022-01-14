@@ -1,14 +1,19 @@
 package ca.rttv.reagenchant;
 
-import ca.rttv.reagenchant.config.*;
+import ca.rttv.reagenchant.config.blaze_powder;
+import ca.rttv.reagenchant.config.blue_ice;
+import ca.rttv.reagenchant.config.diamond;
+import ca.rttv.reagenchant.config.glowstone_dust;
+import ca.rttv.reagenchant.config.gold_ingot;
+import ca.rttv.reagenchant.config.gunpowder;
+import ca.rttv.reagenchant.config.iron_ingot;
+import ca.rttv.reagenchant.config.nether_star;
+import ca.rttv.reagenchant.config.obsidian;
+import ca.rttv.reagenchant.config.prismarine_crystals;
+import ca.rttv.reagenchant.config.prismarine_shard;
+import ca.rttv.reagenchant.config.redstone;
 import net.fabricmc.api.ModInitializer;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.mob.SkeletonEntity;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
 
 public class Reagenchant implements ModInitializer {
 	public static final Identifier withoutReagent = new Identifier("reagenchant", "textures/reagent_enchanting_table_without_reagent.png");

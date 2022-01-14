@@ -1,7 +1,7 @@
 package ca.rttv.reagenchant.mixin;
 
 import ca.rttv.reagenchant.Reagenchant;
-import ca.rttv.reagenchant.access.ItemStackAccess;
+import ca.rttv.reagenchant.access.EnchantmentScreenHandlerAccess;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.screen.ingame.EnchantmentScreen;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
@@ -44,9 +44,8 @@ public abstract class EnchantmentScreenMixin extends HandledScreen<EnchantmentSc
 
     @ModifyArgs(method = "drawBackground", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/font/TextRenderer;drawTrimmed(Lnet/minecraft/text/StringVisitable;IIII)V"))
     private void changeTextColor(Args args) {
-        int[] decrement = ((ItemStackAccess) (Object) handler.inventory.getStack(0)).getDecrement();
-        if (decrement[o] > 0) {
-            args.set(4, 0xA544A0);
+        if (((EnchantmentScreenHandlerAccess) handler).hasReagentEffect(o)) {
+            args.set(4, 0xD760D7);
         }
     }
 
