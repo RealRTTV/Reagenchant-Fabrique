@@ -4,7 +4,6 @@
   "package": "ca.rttv.reagenchant.mixin",
   "compatibilityLevel": "JAVA_16",
   "mixins": [
-    "EnchantmentHelperMixin",
     "EnchantmentScreenHandlerMixin"
   ],
   "client": [
