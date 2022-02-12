@@ -124,7 +124,7 @@ public abstract class EnchantmentScreenHandlerMixin extends ScreenHandler {
          for (int i = 0; i < concat.size(); i++) {
             for (int j = i; j < concat.size(); j++) {
                if (i != j && !concat.get(i).enchantment.canCombine(concat.get(j).enchantment)) {
-                  concat.remove(j--); // thanks intellij
+                  concat.remove(j--); // thanks intellij for the j-- help
                }
             }
          }
