@@ -58,4 +58,9 @@ public abstract class AnvilScreenHandlerMixin extends ForgingScreenHandler {
    private int disableXpRemoval(int levels) {
       return repairItemUsage > 0 ? 0 : levels;
    }
+   
+   @ModifyArg( method = "updateResult", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;setRepairCost(I)V"))
+   private int swap(int repairCost) {
+      return repairItemUsage > 0 ? this.input.getStack(0).getRepairCost() : repairCost;
+   }
 }
