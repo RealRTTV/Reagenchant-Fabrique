@@ -27,78 +27,53 @@ public abstract class EnchantmentScreenMixin extends HandledScreen<EnchantmentSc
       super(handler, inventory, title);
    }
    
-   @ModifyArg( method = "drawBackground",
-               at = @At( value = "INVOKE",
-                         target = "Lnet/minecraft/client/font/TextRenderer;drawWithShadow(Lnet/minecraft/client/util/math/MatrixStack;Ljava/lang/String;FFI)I" ),
-               index = 2 )
+   @ModifyArg( method = "drawBackground", at = @At( value = "INVOKE", target = "Lnet/minecraft/client/font/TextRenderer;drawWithShadow(Lnet/minecraft/client/util/math/MatrixStack;Ljava/lang/String;FFI)I" ), index = 2 )
    private float colorText(float x) {
       return x + 1.0f;
    }
    
-   @Inject( method = "drawBackground",
-            at = @At( value = "INVOKE",
-                      target = "Lcom/mojang/blaze3d/systems/RenderSystem;setShaderTexture(ILnet/minecraft/util/Identifier;)V",
-                      shift = At.Shift.AFTER ) )
+   @Inject( method = "drawBackground", at = @At( value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;setShaderTexture(ILnet/minecraft/util/Identifier;)V", shift = At.Shift.AFTER ) )
    private void setCorrectReagentTexture(MatrixStack matrices, float delta, int mouseX, int mouseY, CallbackInfo ci) {
       RenderSystem.setShaderTexture(0, (handler.inventory.getStack(2).getItem() == Items.AIR ? Reagenchant.withoutReagent : Reagenchant.withReagent));
    }
    
-   @ModifyConstant( method = "mouseClicked",
-                    constant = @Constant( doubleValue = 0.0d,
-                                          ordinal = 0 ) )
+   @ModifyConstant( method = "mouseClicked", constant = @Constant( doubleValue = 0.0d, ordinal = 0 ) )
    private double shiftEnchantmentClickXPart1(double constant) {
       return constant + 1;
    }
    
-   @ModifyConstant( method = "mouseClicked",
-                    constant = @Constant( doubleValue = 108.0 ) )
+   @ModifyConstant( method = "mouseClicked", constant = @Constant( doubleValue = 108.0 ) )
    private double shiftEnchantmentClickXPart2(double constant) {
       return constant + 2;
    }
    
-   @ModifyConstant( method = "drawBackground",
-                    constant = @Constant( intValue = 108 ) )
+   @ModifyConstant( method = "drawBackground", constant = @Constant( intValue = 108 ) )
    private int shiftEnchantmentHoverXPart1(int constant) {
       return constant + 2;
    }
    
    @SuppressWarnings( "MixinAnnotationTarget" )
-   @ModifyConstant( method = "drawBackground",
-                    constant = @Constant( expandZeroConditions = Constant.Condition.GREATER_THAN_OR_EQUAL_TO_ZERO,
-                                          ordinal = 0 ),
-                    slice = @Slice( from = @At( value = "INVOKE",
-                                                target = "Lnet/minecraft/client/font/TextRenderer;drawTrimmed(Lnet/minecraft/text/StringVisitable;IIII)V",
-                                                ordinal = 0 ) ) )
+   @ModifyConstant( method = "drawBackground", constant = @Constant( expandZeroConditions = Constant.Condition.GREATER_THAN_OR_EQUAL_TO_ZERO, ordinal = 0 ), slice = @Slice( from = @At( value = "INVOKE", target = "Lnet/minecraft/client/font/TextRenderer;drawTrimmed(Lnet/minecraft/text/StringVisitable;IIII)V", ordinal = 0 ) ) )
    private int shiftEnchantmentHoverXPart2(int constant) {
       return constant + 1;
    }
    
-   @ModifyConstant( method = "render",
-                    constant = @Constant( intValue = 108 ) )
+   @ModifyConstant( method = "render", constant = @Constant( intValue = 108 ) )
    private int shiftEnchantmentTooltipXPart1(int constant) {
       return constant - 1;
    }
    
-   @ModifyConstant( method = "render",
-                    constant = @Constant( intValue = 60 ) )
+   @ModifyConstant( method = "render", constant = @Constant( intValue = 60 ) )
    private int shiftEnchantmentTooltipXPart2(int constant) {
       return constant + 2;
    }
    
-   @ModifyConstant( method = "render",
-                    constant = @Constant( intValue = 14 ) )
+   @ModifyConstant( method = "render", constant = @Constant( intValue = 14 ) )
    private int shiftEnchantmentTooltipYPart2(int constant) {
       return constant + 1;
    }
    
-   @ModifyArgs( method = "drawBackground",
-                at = @At( value = "INVOKE",
-                          target = "Lnet/minecraft/client/gui/screen/ingame/EnchantmentScreen;drawTexture(Lnet/minecraft/client/util/math/MatrixStack;IIIIII)V" ),
-                slice = @Slice( from = @At( value = "INVOKE",
-                                            target = "Lnet/minecraft/client/gui/screen/ingame/EnchantmentScreen;drawTexture(Lnet/minecraft/client/util/math/MatrixStack;IIIIII)V",
-                                            ordinal = 1 )
-                )
-   )
+   @ModifyArgs( method = "drawBackground", at = @At( value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/ingame/EnchantmentScreen;drawTexture(Lnet/minecraft/client/util/math/MatrixStack;IIIIII)V" ), slice = @Slice( from = @At( value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/ingame/EnchantmentScreen;drawTexture(Lnet/minecraft/client/util/math/MatrixStack;IIIIII)V", ordinal = 1 ) ) )
    private void shiftEnchantmentsTexture(Args args) {
       args.set(1, (int) args.get(1) + 1);
       if ((int) args.get(5) == 108) {

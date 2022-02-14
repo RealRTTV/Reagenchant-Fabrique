@@ -16,6 +16,7 @@ import net.fabricmc.api.ModInitializer;
 import net.minecraft.util.Identifier;
 
 public class Reagenchant implements ModInitializer {
+   public static final Identifier anvil          = new Identifier("reagenchant", "textures/custom_anvil.png");
    public static final float      configVersion  = 1.2f;
    public static final Identifier withReagent    = new Identifier("reagenchant", "textures/reagent_enchanting_table_with_reagent.png");
    public static final Identifier withoutReagent = new Identifier("reagenchant", "textures/reagent_enchanting_table_without_reagent.png");

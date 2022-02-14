@@ -54,10 +54,7 @@ public abstract class EnchantmentScreenHandlerMixin extends ScreenHandler {
       super(type, syncId);
    }
    
-   @Inject( method = "<init>(ILnet/minecraft/entity/player/PlayerInventory;Lnet/minecraft/screen/ScreenHandlerContext;)V",
-            at = @At( value = "INVOKE",
-                      target = "Lnet/minecraft/screen/EnchantmentScreenHandler;addSlot(Lnet/minecraft/screen/slot/Slot;)Lnet/minecraft/screen/slot/Slot;",
-                      ordinal = 1 ) )
+   @Inject( method = "<init>(ILnet/minecraft/entity/player/PlayerInventory;Lnet/minecraft/screen/ScreenHandlerContext;)V", at = @At( value = "INVOKE", target = "Lnet/minecraft/screen/EnchantmentScreenHandler;addSlot(Lnet/minecraft/screen/slot/Slot;)Lnet/minecraft/screen/slot/Slot;", ordinal = 1 ) )
    private void addReagentSlot(int syncId, PlayerInventory playerInventory, ScreenHandlerContext context, CallbackInfo ci) {
       this.addSlot(new Slot(this.inventory, 2, 42, 47) {
          @Override
@@ -78,28 +75,17 @@ public abstract class EnchantmentScreenHandlerMixin extends ScreenHandler {
       });
    }
    
-   @ModifyArg( method = "<init>(ILnet/minecraft/entity/player/PlayerInventory;Lnet/minecraft/screen/ScreenHandlerContext;)V",
-               at = @At( value = "INVOKE",
-                         target = "Lnet/minecraft/screen/EnchantmentScreenHandler;addSlot(Lnet/minecraft/screen/slot/Slot;)Lnet/minecraft/screen/slot/Slot;",
-                         ordinal = 0 ),
-               index = 0 )
+   @ModifyArg( method = "<init>(ILnet/minecraft/entity/player/PlayerInventory;Lnet/minecraft/screen/ScreenHandlerContext;)V", at = @At( value = "INVOKE", target = "Lnet/minecraft/screen/EnchantmentScreenHandler;addSlot(Lnet/minecraft/screen/slot/Slot;)Lnet/minecraft/screen/slot/Slot;", ordinal = 0 ), index = 0 )
    private Slot changeItemEnchantX(Slot slot) {
       return new Slot(slot.inventory, slot.getIndex(), slot.x - 9, slot.y);
    }
    
-   @ModifyArg( method = "<init>(ILnet/minecraft/entity/player/PlayerInventory;Lnet/minecraft/screen/ScreenHandlerContext;)V",
-               at = @At( value = "INVOKE",
-                         target = "Lnet/minecraft/screen/EnchantmentScreenHandler;addSlot(Lnet/minecraft/screen/slot/Slot;)Lnet/minecraft/screen/slot/Slot;",
-                         ordinal = 1 ),
-               index = 0 )
+   @ModifyArg( method = "<init>(ILnet/minecraft/entity/player/PlayerInventory;Lnet/minecraft/screen/ScreenHandlerContext;)V", at = @At( value = "INVOKE", target = "Lnet/minecraft/screen/EnchantmentScreenHandler;addSlot(Lnet/minecraft/screen/slot/Slot;)Lnet/minecraft/screen/slot/Slot;", ordinal = 1 ), index = 0 )
    private Slot changeItemLapisX(Slot slot) {
       return new Slot(slot.inventory, slot.getIndex(), slot.x - 11, slot.y);
    }
    
-   @ModifyArg( method = "<init>(ILnet/minecraft/entity/player/PlayerInventory;Lnet/minecraft/screen/ScreenHandlerContext;)V",
-               at = @At( value = "INVOKE",
-                         target = "Lnet/minecraft/screen/EnchantmentScreenHandler$1;<init>(Lnet/minecraft/screen/EnchantmentScreenHandler;I)V",
-                         ordinal = 0 ) )
+   @ModifyArg( method = "<init>(ILnet/minecraft/entity/player/PlayerInventory;Lnet/minecraft/screen/ScreenHandlerContext;)V", at = @At( value = "INVOKE", target = "Lnet/minecraft/screen/EnchantmentScreenHandler$1;<init>(Lnet/minecraft/screen/EnchantmentScreenHandler;I)V", ordinal = 0 ) )
    private int changeMaxSlotCount(int size) {
       return 3;
    }
@@ -111,11 +97,7 @@ public abstract class EnchantmentScreenHandlerMixin extends ScreenHandler {
     * I don't affect the variable because it's happening after
     * the value is grabbed, I just had to shift it an opcode before
     */
-   @ModifyVariable( method = "generateEnchantments",
-                    at = @At( value = "RETURN",
-                              ordinal = 0,
-                              shift = At.Shift.BEFORE ),
-                    index = 4 )
+   @ModifyVariable( method = "generateEnchantments", at = @At( value = "RETURN", ordinal = 0, shift = At.Shift.BEFORE ), index = 4 )
    private List<EnchantmentLevelEntry> modifyEnchantments(List<EnchantmentLevelEntry> list, ItemStack stack, int slot, int level) throws FileNotFoundException {
       if (inventory.getStack(2).getItem() != Items.AIR) {
          List<EnchantmentLevelEntry> reagentEntries = getReagentEntries(this.random, level, slot);
@@ -123,9 +105,15 @@ public abstract class EnchantmentScreenHandlerMixin extends ScreenHandler {
          concat.addAll(list);
          for (int i = 0; i < concat.size(); i++) {
             for (int j = i; j < concat.size(); j++) {
-               if (i != j && !concat.get(i).enchantment.canCombine(concat.get(j).enchantment)) {
-                  concat.remove(j--); // thanks intellij for the j-- help
+               if (i == j) {
+                  continue;
                }
+               
+               if (concat.get(i).enchantment.canCombine(concat.get(j).enchantment)) {
+                  continue;
+               }
+               
+               concat.remove(j--); // thanks intellij for the j-- help
             }
          }
          return concat;
@@ -195,9 +183,7 @@ public abstract class EnchantmentScreenHandlerMixin extends ScreenHandler {
       return new ArrayList<>();
    }
    
-   @Inject( method = "method_17410",
-            at = @At( value = "INVOKE",
-                      target = "Lnet/minecraft/entity/player/PlayerEntity;incrementStat(Lnet/minecraft/util/Identifier;)V" ) )
+   @Inject( method = "method_17410", at = @At( value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;incrementStat(Lnet/minecraft/util/Identifier;)V" ) )
    private void onButtonClick(ItemStack itemStack, int i, PlayerEntity playerEntity, int j, ItemStack itemStack2, World world, BlockPos pos, CallbackInfo ci) {
       ItemStack stack = this.inventory.getStack(2);
       
@@ -206,16 +192,12 @@ public abstract class EnchantmentScreenHandlerMixin extends ScreenHandler {
       }
    }
    
-   @Inject( method = "onContentChanged",
-            at = @At( value = "INVOKE",
-                      target = "Lnet/minecraft/inventory/Inventory;getStack(I)Lnet/minecraft/item/ItemStack;" ) )
+   @Inject( method = "onContentChanged", at = @At( value = "INVOKE", target = "Lnet/minecraft/inventory/Inventory;getStack(I)Lnet/minecraft/item/ItemStack;" ) )
    private void onContentChanged(Inventory inventory, CallbackInfo ci) {
       // I think something's supposed to be here but idk.
    }
    
-   @Inject( method = "method_17411",
-            at = @At( value = "INVOKE",
-                      target = "Lnet/minecraft/util/registry/Registry;getRawId(Ljava/lang/Object;)I" ) )
+   @Inject( method = "method_17411", at = @At( value = "INVOKE", target = "Lnet/minecraft/util/registry/Registry;getRawId(Ljava/lang/Object;)I" ) )
    private void setItemsSlot(ItemStack itemStack, World world, BlockPos pos, CallbackInfo ci) {
       // I think something's supposed to be here but idk.
    }

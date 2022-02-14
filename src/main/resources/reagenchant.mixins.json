@@ -4,10 +4,13 @@
   "package": "ca.rttv.reagenchant.mixin",
   "compatibilityLevel": "JAVA_16",
   "mixins": [
-    "EnchantmentScreenHandlerMixin"
+    "AnvilScreenHandlerMixin",
+    "EnchantmentScreenHandlerMixin",
+    "ForgingScreenHandlerMixin"
   ],
   "client": [
-    "EnchantmentScreenMixin"
+    "EnchantmentScreenMixin",
+    "AnvilScreenMixin"
   ],
   "injectors": {
     "defaultRequire": 1
